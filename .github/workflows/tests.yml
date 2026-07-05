@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master, develop ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php-version: ['8.0', '8.1', '8.2', '8.3']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        path: style_tester_package
+
+    - name: Clone phpBB Core
+      run: |
+        git clone --depth 1 -b 3.3.x https://github.com/phpbb/phpbb.git temp_phpbb
+        mv temp_phpbb/phpBB/* .
+        mkdir -p style_tester
+        cp -r style_tester_package/style_tester/* ./style_tester/
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        tools: phpunit:9.6
+        extensions: gd, mbstring, xml, ctype, iconv
+        coverage: none
+
+    - name: Run PHPUnit tests
+      run: phpunit style_tester/tests/StyleTesterTest.php
