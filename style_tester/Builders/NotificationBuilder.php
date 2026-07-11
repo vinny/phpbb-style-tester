@@ -14,26 +14,9 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-class NotificationBuilder
+class NotificationBuilder extends BaseBuilder
 {
-	protected $board_dir;
-	protected $phpEx;
-	protected $db;
-	protected $user;
-	protected $auth;
-	protected $config;
-
-	public function __construct($board_dir, $phpEx, $db = null, $user = null, $auth = null, $config = null)
-	{
-		$this->board_dir = $board_dir;
-		$this->phpEx = $phpEx;
-		$this->db = $db ?: $GLOBALS['db'];
-		$this->user = $user ?: $GLOBALS['user'];
-		$this->auth = $auth ?: $GLOBALS['auth'];
-		$this->config = $config ?: $GLOBALS['config'];
-	}
-
-	public function build($users, $forums, $topics, $posts)
+	public function build(array $users, array $forums, array $topics, array $posts): void
 	{
 		$db = $this->db;
 
@@ -49,6 +32,9 @@ class NotificationBuilder
 
 		// Target user for notifications: Founder (User ID 2)
 		$recipient_id = isset($users['founder']['user_id']) ? (int) $users['founder']['user_id'] : 2;
+
+		// Resolve the PM notification type ID dynamically (instead of hardcoding 3)
+		$pm_type_id = isset($types['notification.type.pm']) ? $types['notification.type.pm'] : -1;
 
 		// 1. Reply Notification (using lobby_normal instead of general_normal)
 		if (isset($types['notification.type.post']) && isset($topics['lobby_normal']) && isset($forums['lobby_forum']))
@@ -66,7 +52,7 @@ class NotificationBuilder
 				'forum_id' => $forums['lobby_forum'],
 			];
 
-			$this->insert_notification($type_id, $post_id, $topic_id, $recipient_id, $data);
+			$this->insert_notification($type_id, $post_id, $topic_id, $recipient_id, $data, $pm_type_id);
 		}
 
 		// 2. Quote Notification (using lobby_normal instead of general_normal)
@@ -84,7 +70,7 @@ class NotificationBuilder
 				'forum_id' => $forums['lobby_forum'],
 			];
 
-			$this->insert_notification($type_id, $post_id, $topic_id, $recipient_id, $data);
+			$this->insert_notification($type_id, $post_id, $topic_id, $recipient_id, $data, $pm_type_id);
 		}
 
 		// 3. PM Notification
@@ -104,11 +90,11 @@ class NotificationBuilder
 			$msg_id = $result ? (int) $db->sql_fetchfield('msg_id') : 1;
 			$db->sql_freeresult($result);
 
-			$this->insert_notification($type_id, $msg_id, 0, $recipient_id, $data);
+			$this->insert_notification($type_id, $msg_id, 0, $recipient_id, $data, $pm_type_id);
 		}
 	}
 
-	protected function insert_notification($type_id, $item_id, $parent_id, $user_id, $data)
+	protected function insert_notification(int $type_id, int $item_id, int $parent_id, int $user_id, array $data, int $pm_type_id = -1): void
 	{
 		$db = $this->db;
 
@@ -138,9 +124,9 @@ class NotificationBuilder
 		$sql = 'INSERT INTO ' . NOTIFICATIONS_TABLE . ' ' . $db->sql_build_array('INSERT', $insert_ary);
 		$db->sql_query($sql);
 
-		// Increment recipient\'s user table notification count
+		// Increment recipient's user table notification count (only for PM notifications)
 		$sql = 'UPDATE ' . USERS_TABLE . ' 
-			SET user_unread_privmsg = user_unread_privmsg + ' . ($type_id == 3 ? 1 : 0) . ' 
+			SET user_unread_privmsg = user_unread_privmsg + ' . ($type_id === $pm_type_id ? 1 : 0) . ' 
 			WHERE user_id = ' . (int) $user_id;
 		$db->sql_query($sql);
 	}

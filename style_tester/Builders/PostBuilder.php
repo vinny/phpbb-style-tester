@@ -14,26 +14,9 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-class PostBuilder
+class PostBuilder extends BaseBuilder
 {
-	protected $board_dir;
-	protected $phpEx;
-	protected $db;
-	protected $user;
-	protected $auth;
-	protected $config;
-
-	public function __construct($board_dir, $phpEx, $db = null, $user = null, $auth = null, $config = null)
-	{
-		$this->board_dir = $board_dir;
-		$this->phpEx = $phpEx;
-		$this->db = $db ?: $GLOBALS['db'];
-		$this->user = $user ?: $GLOBALS['user'];
-		$this->auth = $auth ?: $GLOBALS['auth'];
-		$this->config = $config ?: $GLOBALS['config'];
-	}
-
-	public function build($forums, $users, $topics)
+	public function build(array $forums, array $users, array $topics): array
 	{
 		$db = $this->db;
 
@@ -198,9 +181,9 @@ This is an extremely wide code block line designed to force overflow-x horizonta
 		return $created_posts;
 	}
 
-	protected function create_topic($forum_id, $user_id, $subject, $message)
+	protected function create_topic(int $forum_id, int $user_id, string $subject, string $message): array
 	{
-		global $db, $user;
+		$db = $this->db;
 
 		// Check if topic already exists
 		$sql = 'SELECT topic_id, topic_first_post_id FROM ' . TOPICS_TABLE . ' 
@@ -252,7 +235,7 @@ This is an extremely wide code block line designed to force overflow-x horizonta
 		];
 
 		$poll = [];
-		submit_post('post', $subject, $user->data['username'], POST_NORMAL, $poll, $data);
+		submit_post('post', $subject, $this->user->data['username'], POST_NORMAL, $poll, $data);
 
 		$this->restore_user();
 
@@ -262,9 +245,9 @@ This is an extremely wide code block line designed to force overflow-x horizonta
 		];
 	}
 
-	protected function create_reply($topic_id, $forum_id, $user_id, $subject, $message)
+	protected function create_reply(int $topic_id, int $forum_id, int $user_id, string $subject, string $message): int
 	{
-		global $db, $user;
+		$db = $this->db;
 
 		// Check if reply already exists
 		$sql = 'SELECT post_id FROM ' . POSTS_TABLE . ' 
@@ -314,38 +297,10 @@ This is an extremely wide code block line designed to force overflow-x horizonta
 		];
 
 		$poll = [];
-		submit_post('reply', $subject, $user->data['username'], POST_NORMAL, $poll, $data);
+		submit_post('reply', $subject, $this->user->data['username'], POST_NORMAL, $poll, $data);
 
 		$this->restore_user();
 
 		return (int) $data['post_id'];
-	}
-
-	protected $saved_user_data;
-
-	protected function switch_user($user_id)
-	{
-		global $db, $user, $auth;
-
-		$this->saved_user_data = $user->data;
-
-		$sql = 'SELECT * FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $user_id;
-		$result = $db->sql_query($sql);
-		$user_row = $db->sql_fetchrow($result);
-		$db->sql_freeresult($result);
-
-		if ($user_row)
-		{
-			$user->data = array_merge($user->data, $user_row);
-			$user->data['is_registered'] = ($user_row['user_id'] != ANONYMOUS && ($user_row['user_type'] == USER_NORMAL || $user_row['user_type'] == USER_FOUNDER)) ? true : false;
-			$auth->acl($user_row);
-		}
-	}
-
-	protected function restore_user()
-	{
-		global $user, $auth;
-		$user->data = $this->saved_user_data;
-		$auth->acl($user->data);
 	}
 }

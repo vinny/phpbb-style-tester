@@ -2,3 +2,20 @@
 
 # Ignored directories
 images/
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS generated
+Thumbs.db
+.DS_Store
+
+# PHP / Composer
+vendor/
+composer.lock
+.phpunit.result.cache
+

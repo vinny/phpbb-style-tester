@@ -14,26 +14,9 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-class AttachmentBuilder
+class AttachmentBuilder extends BaseBuilder
 {
-	protected $board_dir;
-	protected $phpEx;
-	protected $db;
-	protected $user;
-	protected $auth;
-	protected $config;
-
-	public function __construct($board_dir, $phpEx, $db = null, $user = null, $auth = null, $config = null)
-	{
-		$this->board_dir = $board_dir;
-		$this->phpEx = $phpEx;
-		$this->db = $db ?: $GLOBALS['db'];
-		$this->user = $user ?: $GLOBALS['user'];
-		$this->auth = $auth ?: $GLOBALS['auth'];
-		$this->config = $config ?: $GLOBALS['config'];
-	}
-
-	public function build($posts, $users)
+	public function build(array $posts, array $users): void
 	{
 		$db = $this->db;
 

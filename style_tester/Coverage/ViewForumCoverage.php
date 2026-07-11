@@ -16,7 +16,7 @@ if (!defined('IN_PHPBB'))
 
 class ViewForumCoverage extends BaseCoverage
 {
-	public function check()
+	public function check(): array
 	{
 		global $db;
 

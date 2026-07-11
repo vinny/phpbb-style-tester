@@ -14,28 +14,12 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-class SearchBuilder
+class SearchBuilder extends BaseBuilder
 {
-	protected $board_dir;
-	protected $phpEx;
-	protected $db;
-	protected $user;
-	protected $auth;
-	protected $config;
-
-	public function __construct($board_dir, $phpEx, $db = null, $user = null, $auth = null, $config = null)
+	public function build(array $posts = []): void
 	{
-		$this->board_dir = $board_dir;
-		$this->phpEx = $phpEx;
-		$this->db = $db ?: $GLOBALS['db'];
-		$this->user = $user ?: $GLOBALS['user'];
-		$this->auth = $auth ?: $GLOBALS['auth'];
-		$this->config = $config ?: $GLOBALS['config'];
-	}
-
-	public function build($posts = [])
-	{
-		$db = $this->db; $config = $this->config;
+		$db = $this->db;
+		$config = $this->config;
 		global $phpbb_container;
 
 		// Since submit_post() updates the search index automatically,

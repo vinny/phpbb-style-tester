@@ -14,29 +14,10 @@ if (!defined('IN_PHPBB'))
 	exit;
 }
 
-class PollBuilder
+class PollBuilder extends BaseBuilder
 {
-	protected $board_dir;
-	protected $phpEx;
-	protected $db;
-	protected $user;
-	protected $auth;
-	protected $config;
-
-	public function __construct($board_dir, $phpEx, $db = null, $user = null, $auth = null, $config = null)
+	public function build(array $forums, array $users, array $topics): void
 	{
-		$this->board_dir = $board_dir;
-		$this->phpEx = $phpEx;
-		$this->db = $db ?: $GLOBALS['db'];
-		$this->user = $user ?: $GLOBALS['user'];
-		$this->auth = $auth ?: $GLOBALS['auth'];
-		$this->config = $config ?: $GLOBALS['config'];
-	}
-
-	public function build($forums, $users, $topics)
-	{
-		$db = $this->db; $user = $this->user; $auth = $this->auth;
-
 		if (!function_exists('submit_post'))
 		{
 			require_once($this->board_dir . 'includes/functions_posting.' . $this->phpEx);
@@ -91,9 +72,9 @@ class PollBuilder
 		$this->restore_user();
 	}
 
-	protected function create_poll_topic($forum_id, $subject, $message, $poll_ary)
+	protected function create_poll_topic(int $forum_id, string $subject, string $message, array $poll_ary): array
 	{
-		global $db, $user;
+		$db = $this->db;
 
 		// Check if topic already exists
 		$sql = 'SELECT topic_id, topic_first_post_id FROM ' . TOPICS_TABLE . " WHERE topic_title = '" . $db->sql_escape($subject) . "'";
@@ -157,7 +138,7 @@ class PollBuilder
 			'poll_start' => time(),
 		];
 
-		submit_post('post', $subject, $user->data['username'], POST_NORMAL, $poll_data, $data);
+		submit_post('post', $subject, $this->user->data['username'], POST_NORMAL, $poll_data, $data);
 
 		return [
 			'topic_id' => (int) $data['topic_id'],
@@ -165,9 +146,9 @@ class PollBuilder
 		];
 	}
 
-	protected function inject_votes($topic_id, $users)
+	protected function inject_votes(int $topic_id, array $users): void
 	{
-		global $db;
+		$db = $this->db;
 
 		// Check if votes are already injected for this topic
 		$sql = 'SELECT COUNT(*) as cnt FROM ' . POLL_VOTES_TABLE . ' WHERE topic_id = ' . (int) $topic_id;
@@ -237,33 +218,5 @@ class PollBuilder
 		// Update topic table with correct poll_last_vote column
 		$sql = 'UPDATE ' . TOPICS_TABLE . ' SET poll_last_vote = ' . time() . ' WHERE topic_id = ' . (int) $topic_id;
 		$db->sql_query($sql);
-	}
-
-	protected $saved_user_data;
-
-	protected function switch_user($user_id)
-	{
-		$db = $this->db; $user = $this->user; $auth = $this->auth;
-
-		$this->saved_user_data = $user->data;
-
-		$sql = 'SELECT * FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $user_id;
-		$result = $db->sql_query($sql);
-		$user_row = $db->sql_fetchrow($result);
-		$db->sql_freeresult($result);
-
-		if ($user_row)
-		{
-			$user->data = array_merge($user->data, $user_row);
-			$user->data['is_registered'] = ($user_row['user_id'] != ANONYMOUS && ($user_row['user_type'] == USER_NORMAL || $user_row['user_type'] == USER_FOUNDER)) ? true : false;
-			$auth->acl($user_row);
-		}
-	}
-
-	protected function restore_user()
-	{
-		global $user, $auth;
-		$user->data = $this->saved_user_data;
-		$auth->acl($user->data);
 	}
 }

@@ -16,7 +16,7 @@ if (!defined('IN_PHPBB'))
 
 class McpCoverage extends BaseCoverage
 {
-	public function check()
+	public function check(): array
 	{
 		global $db;
 

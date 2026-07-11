@@ -16,7 +16,7 @@ if (!defined('IN_PHPBB'))
 
 class AcpCoverage extends BaseCoverage
 {
-	public function check()
+	public function check(): array
 	{
 		// Administration control panel relies on standard phpBB installations.
 		// We verify config parameters for styling and style tester settings are correct.

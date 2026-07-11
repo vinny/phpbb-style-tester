@@ -16,7 +16,7 @@ if (!defined('IN_PHPBB'))
 
 class PostingCoverage extends BaseCoverage
 {
-	public function check()
+	public function check(): array
 	{
 		// Posting editor is dynamically rendered and contains posting_body.html.
 		// We verify configuration setup for posting options is verified.

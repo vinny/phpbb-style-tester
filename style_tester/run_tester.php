@@ -75,7 +75,7 @@ $coverages = [
 ];
 
 foreach ($coverages as $cov)
-	{
+{
 	require_once(__DIR__ . '/Coverage/' . $cov . '.' . $phpEx);
 }
 
@@ -106,7 +106,7 @@ foreach ($checkers as $checker)
 	{
 		$status_str = ($status === 'PASSED') ? "\033[32m[ PASSED ]\033[0m" : "\033[31m[ FAILED ]\033[0m";
 		// Fallback without color escape codes if terminal does not support colors
-		if (strpos(getenv('OS'), 'Windows') !== false) {
+		if (PHP_OS_FAMILY === 'Windows') {
 			$status_str = "[ {$status} ]";
 		}
 		

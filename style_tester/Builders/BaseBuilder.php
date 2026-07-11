@@ -115,4 +115,41 @@ abstract class BaseBuilder
 			error_log($message);
 		}
 	}
+
+	/** @var array|null */
+	protected $saved_user_data;
+
+	/**
+	 * Switch the global user context to the specified user ID.
+	 *
+	 * @param int $user_id
+	 * @return void
+	 */
+	protected function switch_user(int $user_id): void
+	{
+		$this->saved_user_data = $this->user->data;
+
+		$sql = 'SELECT * FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $user_id;
+		$result = $this->execute_query($sql);
+		$user_row = $this->db->sql_fetchrow($result);
+		$this->db->sql_freeresult($result);
+
+		if ($user_row)
+		{
+			$this->user->data = array_merge($this->user->data, $user_row);
+			$this->user->data['is_registered'] = ($user_row['user_id'] != ANONYMOUS && ($user_row['user_type'] == USER_NORMAL || $user_row['user_type'] == USER_FOUNDER)) ? true : false;
+			$this->auth->acl($user_row);
+		}
+	}
+
+	/**
+	 * Restore the global user context to the previously saved state.
+	 *
+	 * @return void
+	 */
+	protected function restore_user(): void
+	{
+		$this->user->data = $this->saved_user_data;
+		$this->auth->acl($this->user->data);
+	}
 }

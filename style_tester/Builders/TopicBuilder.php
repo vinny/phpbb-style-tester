@@ -294,30 +294,5 @@ class TopicBuilder extends BaseBuilder
 		return $moved_topic_id;
 	}
 
-	protected $saved_user_data;
-
-	protected function switch_user(int $user_id): void
-	{
-		$db = $this->db; $user = $this->user; $auth = $this->auth;
-
-		$this->saved_user_data = $user->data;
-
-		$sql = 'SELECT * FROM ' . USERS_TABLE . ' WHERE user_id = ' . (int) $user_id;
-		$result = $this->execute_query($sql);
-		$user_row = $db->sql_fetchrow($result);
-		$db->sql_freeresult($result);
-
-		if ($user_row)
-		{
-			$user->data = array_merge($user->data, $user_row);
-			$user->data['is_registered'] = ($user_row['user_id'] != ANONYMOUS && ($user_row['user_type'] == USER_NORMAL || $user_row['user_type'] == USER_FOUNDER)) ? true : false;
-			$auth->acl($user_row);
-		}
-	}
-
-	protected function restore_user(): void
-	{
-		$this->user->data = $this->saved_user_data;
-		$this->auth->acl($this->user->data);
-	}
 }
+

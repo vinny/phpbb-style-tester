@@ -25,5 +25,10 @@ abstract class BaseCoverage
 		$this->phpEx = $phpEx;
 	}
 
-	abstract public function check();
+	/**
+	 * Run coverage checks and return results.
+	 *
+	 * @return array Key-value pairs of check name => 'PASSED'|'FAILED'
+	 */
+	abstract public function check(): array;
 }

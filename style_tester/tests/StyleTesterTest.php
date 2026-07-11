@@ -60,6 +60,22 @@ namespace {
 			}
 		}
 	}
+	if (!function_exists('copy_forum_permissions'))
+	{
+		function copy_forum_permissions($src_id, $dest_id) { return true; }
+	}
+	if (!function_exists('submit_pm'))
+	{
+		function submit_pm($mode, $subject, &$data, $put_in_outbox = true)
+		{
+			$data['msg_id'] = 99;
+			return true;
+		}
+	}
+	if (!function_exists('validate_range'))
+	{
+		function validate_range($value, $min, $max) { return true; }
+	}
 }
 
 namespace StyleTester\Tests
@@ -401,11 +417,6 @@ class StyleTesterTest extends TestCase
 
 	public function testForumBuilderQueriesAndInsertions()
 	{
-		// Mock functions needed by ForumBuilder
-		if (!function_exists('copy_forum_permissions'))
-		{
-			function copy_forum_permissions($src_id, $dest_id) { return true; }
-		}
 
 		$builder = new \StyleTester\Builders\ForumBuilder(
 			$this->board_dir,
@@ -438,15 +449,6 @@ class StyleTesterTest extends TestCase
 		$forums_map = ['lobby_forum' => 12];
 		$topics_map = ['lobby_normal' => ['topic_id' => 45]];
 
-		// Mock functions needed by PrivateMessageBuilder
-		if (!function_exists('submit_pm'))
-		{
-			function submit_pm($mode, $subject, &$data, $put_in_outbox = true)
-			{
-				$data['msg_id'] = 99;
-				return true;
-			}
-		}
 
 		// Mock auth acl call
 		$this->auth_mock->acl_data = [];
