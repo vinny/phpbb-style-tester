@@ -11,28 +11,18 @@ This tool automates the process of seeding a local phpBB development forum with 
 
 The tool executes specialized builders to cover the following template scenarios:
 
-*   **Users (`Builders\UserBuilder`)**: Seeds exactly 25 test users (`tester_X` based on their `user_id`) mapped only to default standard phpBB groups (no new custom groups or ranks are created):
-    *   `val_admin` (and the first two testers) are mapped to the default **Administrators** group.
-    *   `val_glob_mod` (and the next two testers) are mapped to the default **Global Moderators** group.
-    *   All other test users (referenced in logic as `val_reg_user`, `val_reg_user_2`, etc.) are mapped to the default **Registered Users** group.
-    *   Configures user avatars (copied locally from Assets) and forum signatures.
-*   **Forums (`Builders\ForumBuilder`)**: Creates a clean, nested structure:
-    *   Category 1 & Category 2
-    *   Lobby Forum (standard topics)
-    *   Special Showcase (locked posts, attachment previews)
-    *   Forum Link redirects
-    *   Archive Forum
-*   **Topics (`Builders\TopicBuilder`)**: Creates a variety of topic types:
-    *   Normal, sticky, announcement, and global announcement topics.
-    *   Locked and reported topics to validate moderator layout flags.
-*   **Polls (`Builders\PollBuilder`)**: Inserts single-choice and multi-choice polls with various voter metrics.
-*   **Attachments (`Builders\AttachmentBuilder`)**: Seeds image and document attachments to post previews.
-*   **Reports (`Builders\ReportBuilder`)**: Flags topics and posts for visual testing of moderator queues.
-*   **Private Messages (`Builders\PrivateMessageBuilder`)**: Populates the Admin's inbox (user ID 2) with:
-    *   Unread, read, reported, and sent private messages.
-    *   Sets bookmarks, topic watches, forum watches, and drafts.
-*   **Notifications (`Builders\NotificationBuilder`)**: Inserts mock unread notifications to test the header alert icons.
-*   **Search Index (`Builders\SearchBuilder`)**: Automatically builds search terms for seeded topics.
+*   **Users (`Builders\UserBuilder`)**: Seeds exactly 25 test users mapped to default phpBB groups, with avatars and signatures configured.
+*   **Forums (`Builders\ForumBuilder`)**: Creates test categories and forums (read, unread, locked, password-protected, and link redirects).
+*   **Topics (`Builders\TopicBuilder`)**: Adds normal, sticky, announcement, global announcement, locked, and moved redirect topics.
+*   **Posts (`Builders\PostBuilder`)**: Adds standard posts and replies to showcase BBCodes, smileys, deep quote nesting, and pagination.
+*   **Polls (`Builders\PollBuilder`)**: Seeds active and voted polls with mock voter distribution to test results display.
+*   **Attachments (`Builders\AttachmentBuilder`)**: Attaches test images and zip files to posts.
+*   **Reports (`Builders\ReportBuilder`)**: Flags posts and topics to test the moderator queue layout.
+*   **UCP (`Builders\PrivateMessageBuilder`)**: Populates the User Control Panel with read, unread, sent, and reported private messages, bookmarks, watches, and drafts.
+*   **Notifications (`Builders\NotificationBuilder`)**: Inserts mock unread notifications to test header alert icons.
+*   **Search Index (`Builders\SearchBuilder`)**: Automatically indexes seeded posts for test searches.
+
+
 
 ---
 
@@ -51,7 +41,7 @@ To prevent accidental data leakage or execution on live sites, the trigger scrip
 
 ### Prerequisites
 *   A **fresh** phpBB **3.3.x** local installation. Use [QuickInstall](https://www.phpbb.com/customise/db/official_tool/phpbb3_quickinstall/) to quickly set up fresh testing boards.
-*   PHP **8.0** or above (CLI version enabled).
+*   PHP **7.4** or above (CLI version enabled).
 
 ### Setup
 Copy the `style_tester/` folder directly to the root of your local phpBB installation.
