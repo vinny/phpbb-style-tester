@@ -1,4 +1,4 @@
-# phpBB Style Tester
+# phpBB Style Tester [![Tests](https://github.com/vinny/phpbb-style-tester/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-style-tester/actions)
 
 This tool automates the process of seeding a local phpBB development forum with comprehensive and edge-case template data. It is specifically designed to achieve **100% template coverage** for testing phpBB styles and verifying visual layouts.
 
@@ -91,6 +91,7 @@ php phpunit.phar style_tester/tests/StyleTesterTest.php
 
 The seed assets (including default avatars and attachment images) utilize third-party creative resources:
 
-*   Attachment Image: [Photo](https://unsplash.com/pt-br/fotografias/esferas-pasteis-sobre-fundo-em-gradiente-PGdW_bHDbpI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) by [Milad Fakurian](https://unsplash.com/pt-br/@fakurian?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/)
+*   Attachment Image: [Photo](https://unsplash.com/photos/pastel-spheres-on-gradient-background-PGdW_bHDbpI?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) by [Milad Fakurian](https://unsplash.com/@fakurian?utm_source=unsplash&utm_medium=referral&utm_content=creditCopyText) on [Unsplash](https://unsplash.com/)
 *   Avatars: Sourced from [Dicebear API](https://www.dicebear.com/)
+*   Forum Icon: Sourced from [phpBB About Logos](https://www.phpbb.com/about/logos/)
 
