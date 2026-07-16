@@ -272,6 +272,42 @@ class ForumBuilder extends BaseBuilder
 			}
 		}
 
+		// Query the role ID for Standard Moderator
+		$sql = 'SELECT role_id FROM ' . ACL_ROLES_TABLE . " WHERE role_name = 'ROLE_MOD_STANDARD'";
+		$result = $this->execute_query($sql);
+		$role_id = $result ? (int) $db->sql_fetchfield('role_id') : 11;
+		$db->sql_freeresult($result);
+
+		// Assign Administrators (ID 5) and Global Moderators (ID 4) as moderators of default forum
+		$groups_to_mod = [
+			'ADMINISTRATORS' => 5,
+			'GLOBAL_MODERATORS' => 4,
+		];
+		
+		foreach ($groups_to_mod as $g_name => $g_id)
+		{
+			// Check if already assigned to keep it idempotent
+			$sql = 'SELECT COUNT(*) as cnt FROM ' . ACL_GROUPS_TABLE . ' 
+				WHERE group_id = ' . (int) $g_id . ' 
+					AND forum_id = ' . (int) $def_forum_id . ' 
+					AND auth_role_id = ' . (int) $role_id;
+			$result = $this->execute_query($sql);
+			$is_mod = (int) $db->sql_fetchfield('cnt');
+			$db->sql_freeresult($result);
+			if (!$is_mod)
+			{
+				$acl_group_row = [
+					'group_id' => (int) $g_id,
+					'forum_id' => (int) $def_forum_id,
+					'auth_option_id' => 0,
+					'auth_role_id' => (int) $role_id,
+					'auth_setting' => 0,
+				];
+				$sql = 'INSERT INTO ' . ACL_GROUPS_TABLE . ' ' . $db->sql_build_array('INSERT', $acl_group_row);
+				$this->execute_query($sql);
+			}
+		}
+
 		$auth->acl_clear_prefetch();
 
 		return $forums;
