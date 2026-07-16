@@ -105,6 +105,7 @@ if (!defined('TOPICS_WATCH_TABLE')) { define('TOPICS_WATCH_TABLE', 'phpbb_topics
 if (!defined('FORUMS_WATCH_TABLE')) { define('FORUMS_WATCH_TABLE', 'phpbb_forums_watch'); }
 if (!defined('FORUMS_TRACK_TABLE')) { define('FORUMS_TRACK_TABLE', 'phpbb_forums_track'); }
 if (!defined('DRAFTS_TABLE')) { define('DRAFTS_TABLE', 'phpbb_drafts'); }
+if (!defined('WARNINGS_TABLE')) { define('WARNINGS_TABLE', 'phpbb_warnings'); }
 
 // Define phpBB core constants if not loaded
 if (!defined('FORUM_CAT')) { define('FORUM_CAT', 0); }

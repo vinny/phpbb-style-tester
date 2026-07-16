@@ -145,7 +145,7 @@ This is an extremely wide code block line designed to force overflow-x horizonta
 		];
 		$reply_authors = array_merge([$founder_id], $all_testers);
 
-		for ($i = 1; $i <= 15; $i++)
+		for ($i = 1; $i <= 40; $i++)
 		{
 			$author_id = $reply_authors[$i % count($reply_authors)];
 			$reply_id = $this->create_reply(

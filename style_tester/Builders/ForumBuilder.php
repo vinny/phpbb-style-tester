@@ -38,6 +38,19 @@ class ForumBuilder extends BaseBuilder
 
 		$acp_forums = new \acp_forums();
 
+		// Copy forum icon from Assets to phpBB images folder
+		$source_icon = dirname(__DIR__) . '/Assets/logo_small_cosmic.png';
+		$dest_icon_dir = $this->board_dir . 'images';
+		if (!file_exists($dest_icon_dir))
+		{
+			@mkdir($dest_icon_dir, 0755, true);
+		}
+		$dest_icon = $dest_icon_dir . '/logo_small_cosmic.png';
+		if (file_exists($source_icon))
+		{
+			@copy($source_icon, $dest_icon);
+		}
+
 		// Locate default category and forum (we do NOT rename them now)
 		$sql = 'SELECT forum_id FROM ' . FORUMS_TABLE . ' WHERE forum_type = ' . FORUM_CAT . ' ORDER BY forum_id ASC';
 		$result = $db->sql_query_limit($sql, 1);
@@ -110,6 +123,7 @@ class ForumBuilder extends BaseBuilder
 					'password_forum' => ['name' => 'Password Protected Forum', 'desc' => 'Access is password-gated. Password is: 123456', 'password' => '123456'],
 					'private_forum'  => ['name' => 'Private Forum', 'desc' => 'Requires special group permissions to view.'],
 					'empty_forum'    => ['name' => 'Empty Forum', 'desc' => 'This forum has no posts or topics.'],
+					'forum_with_icon'=> ['name' => 'Forum with Icon', 'desc' => 'This forum showcases a custom forum icon.', 'image' => 'images/logo_small_cosmic.png'],
 				]
 			]
 		];
@@ -161,6 +175,11 @@ class ForumBuilder extends BaseBuilder
 					if (isset($forum_info['status']))
 					{
 						$forum_data['forum_status'] = $forum_info['status'];
+					}
+
+					if (isset($forum_info['image']))
+					{
+						$forum_data['forum_image'] = $forum_info['image'];
 					}
 
 					$forum_id = $this->create_forum_item($forum_data, $acp_forums, $def_forum_id);
@@ -221,6 +240,38 @@ class ForumBuilder extends BaseBuilder
 			]));
 		}
 
+
+		// Update forum icon for Forum with Icon (idempotency)
+		if (isset($forums['forum_with_icon']))
+		{
+			$sql = 'UPDATE ' . FORUMS_TABLE . " 
+				SET forum_image = 'images/logo_small_cosmic.png' 
+				WHERE forum_id = " . (int) $forums['forum_with_icon'];
+			$this->execute_query($sql);
+		}
+
+		// Parse rules text
+		$rules_text = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.';
+		$rules_uid = $rules_bitfield = '';
+		$rules_options = 7;
+		generate_text_for_storage($rules_text, $rules_uid, $rules_bitfield, $rules_options, true, true, true);
+
+		// Update rules for Lobby Forum, Read Forum, and Unread Forum
+		$rules_forums = ['lobby_forum', 'read_forum', 'unread_forum'];
+		foreach ($rules_forums as $rf)
+		{
+			if (isset($forums[$rf]))
+			{
+				$sql = 'UPDATE ' . FORUMS_TABLE . " 
+					SET forum_rules = '" . $db->sql_escape($rules_text) . "', 
+						forum_rules_uid = '" . $db->sql_escape($rules_uid) . "', 
+						forum_rules_bitfield = '" . $db->sql_escape($rules_bitfield) . "', 
+						forum_rules_options = " . (int) $rules_options . " 
+					WHERE forum_id = " . (int) $forums[$rf];
+				$this->execute_query($sql);
+			}
+		}
+
 		$auth->acl_clear_prefetch();
 
 		return $forums;
@@ -270,6 +321,12 @@ class ForumBuilder extends BaseBuilder
 
 		// Parse description text
 		generate_text_for_storage($forum_data['forum_desc'], $forum_data['forum_desc_uid'], $forum_data['forum_desc_bitfield'], $forum_data['forum_desc_options'], false, false, false);
+
+		// Parse rules text if present
+		if (!empty($forum_data['forum_rules']))
+		{
+			generate_text_for_storage($forum_data['forum_rules'], $forum_data['forum_rules_uid'], $forum_data['forum_rules_bitfield'], $forum_data['forum_rules_options'], true, true, true);
+		}
 
 		// Run update_forum_data (which adds it)
 		$errors = $acp_forums->update_forum_data($forum_data);

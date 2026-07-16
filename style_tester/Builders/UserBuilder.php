@@ -236,6 +236,34 @@ class UserBuilder extends BaseBuilder
 			$this->execute_query($sql);
 		}
 
+		// Add warnings for a couple of test users to populate MCP Warnings tab
+		$warned_users = [$tester_ids[3], $tester_ids[4]];
+		foreach ($warned_users as $w_uid)
+		{
+			// Check if warning already exists for this user to keep it idempotent
+			$sql = 'SELECT COUNT(*) as cnt FROM ' . WARNINGS_TABLE . ' WHERE user_id = ' . (int) $w_uid;
+			$result = $this->execute_query($sql);
+			$has_warning = (int) $db->sql_fetchfield('cnt');
+			$db->sql_freeresult($result);
+			if (!$has_warning)
+			{
+				$warning_row = [
+					'user_id' => (int) $w_uid,
+					'post_id' => 0,
+					'log_id' => 0,
+					'warning_time' => time(),
+				];
+				$sql = 'INSERT INTO ' . WARNINGS_TABLE . ' ' . $db->sql_build_array('INSERT', $warning_row);
+				$this->execute_query($sql);
+
+				$sql = 'UPDATE ' . USERS_TABLE . ' 
+					SET user_warnings = 1, 
+						user_last_warning = ' . time() . ' 
+					WHERE user_id = ' . (int) $w_uid;
+				$this->execute_query($sql);
+			}
+		}
+
 		// Map generated users to keys that downstream builders expect
 		$users = [
 			'val_admin'        => ['user_id' => $tester_ids[0], 'username' => $existing_testers[$tester_ids[0]], 'user_colour' => ''],
