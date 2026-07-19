@@ -16,10 +16,13 @@ if (!defined('IN_PHPBB'))
 
 class StyleTesterInstaller
 {
-	protected $board_dir;
-	protected $phpEx;
+	/** @var \phpbb\db\driver\driver_interface|null */
+	protected $db;
 
-	public function run($board_dir, $phpEx)
+	/** @var \phpbb\config\config|null */
+	protected $config;
+
+	public function run(string $board_dir, string $phpEx): void
 	{
 		global $db, $cache, $config;
 
@@ -29,11 +32,14 @@ class StyleTesterInstaller
 		// Load dependencies via autoloader or manual fallback
 		$this->setup_autoloading();
 
-		// Get standard dependency instances (DIP)
-		$db_instance = isset($GLOBALS['db']) ? $GLOBALS['db'] : null;
-		$user_instance = isset($GLOBALS['user']) ? $GLOBALS['user'] : null;
-		$auth_instance = isset($GLOBALS['auth']) ? $GLOBALS['auth'] : null;
-		$config_instance = isset($GLOBALS['config']) ? $GLOBALS['config'] : null;
+		// Get standard dependency instances (DIP) with null coalescing
+		$db_instance = $GLOBALS['db'] ?? null;
+		$user_instance = $GLOBALS['user'] ?? null;
+		$auth_instance = $GLOBALS['auth'] ?? null;
+		$config_instance = $GLOBALS['config'] ?? null;
+
+		$this->db = $db_instance;
+		$this->config = $config_instance;
 
 		// 2. Users
 		$userBuilder = new Builders\UserBuilder($this->board_dir, $this->phpEx, $db_instance, $user_instance, $auth_instance, $config_instance);
@@ -79,7 +85,7 @@ class StyleTesterInstaller
 		$this->finalize();
 	}
 
-	protected function setup_autoloading()
+	protected function setup_autoloading(): void
 	{
 		global $phpbb_class_loader;
 
@@ -93,7 +99,7 @@ class StyleTesterInstaller
 		}
 	}
 
-	protected function load_dependencies()
+	protected function load_dependencies(): void
 	{
 		$builders = [
 			'BaseBuilder',
@@ -114,7 +120,7 @@ class StyleTesterInstaller
 		}
 	}
 
-	protected function finalize()
+	protected function finalize(): void
 	{
 		global $cache, $db, $config;
 

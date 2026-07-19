@@ -1,4 +1,6 @@
-# phpBB Style Tester [![Tests](https://github.com/vinny/phpbb-style-tester/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-style-tester/actions)
+# phpBB Style Tester [![Tests](https://github.com/vinny/phpbb-style-tester/actions/workflows/tests.yml/badge.svg)](https://github.com/vinny/phpbb-style-tester/actions) [![PHP Version](https://img.shields.io/badge/PHP-7.4%20to%208.3+-8892BF.svg)](https://packagist.org/packages/phpbb/phpbb) [![Why PHP](https://img.shields.io/badge/Why_PHP-in_2026-7A86E8?style=flat&labelColor=18181b)](https://whyphp.dev)
+
+
 
 This tool automates the process of seeding a local phpBB development forum with comprehensive and edge-case template data. It is specifically designed to achieve **100% template coverage** for testing phpBB styles and verifying visual layouts.
 

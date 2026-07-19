@@ -236,8 +236,10 @@ class UserBuilder extends BaseBuilder
 			$this->execute_query($sql);
 		}
 
-		// Add warnings for a couple of test users to populate MCP Warnings tab
+		// Add warnings for a couple of test users to populate MCP Warnings tab (batch process)
 		$warned_users = [$tester_ids[3], $tester_ids[4]];
+		$warnings_to_insert = [];
+		$users_to_update = [];
 		foreach ($warned_users as $w_uid)
 		{
 			// Check if warning already exists for this user to keep it idempotent
@@ -247,21 +249,25 @@ class UserBuilder extends BaseBuilder
 			$db->sql_freeresult($result);
 			if (!$has_warning)
 			{
-				$warning_row = [
+				$warnings_to_insert[] = [
 					'user_id' => (int) $w_uid,
 					'post_id' => 0,
 					'log_id' => 0,
 					'warning_time' => time(),
 				];
-				$sql = 'INSERT INTO ' . WARNINGS_TABLE . ' ' . $db->sql_build_array('INSERT', $warning_row);
-				$this->execute_query($sql);
-
-				$sql = 'UPDATE ' . USERS_TABLE . ' 
-					SET user_warnings = 1, 
-						user_last_warning = ' . time() . ' 
-					WHERE user_id = ' . (int) $w_uid;
-				$this->execute_query($sql);
+				$users_to_update[] = (int) $w_uid;
 			}
+		}
+
+		if (!empty($warnings_to_insert))
+		{
+			$db->sql_multi_insert(WARNINGS_TABLE, $warnings_to_insert);
+
+			$sql = 'UPDATE ' . USERS_TABLE . ' 
+				SET user_warnings = 1, 
+					user_last_warning = ' . time() . ' 
+				WHERE ' . $db->sql_in_set('user_id', $users_to_update);
+			$this->execute_query($sql);
 		}
 
 		// Map generated users to keys that downstream builders expect

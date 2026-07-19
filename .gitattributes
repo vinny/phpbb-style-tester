@@ -1,0 +1,10 @@
+# Auto detect text files and perform LF normalization
+* text=auto
+
+# Ignore development, documentation, and CI files when exporting zip archives
+/.github export-ignore
+/.gitignore export-ignore
+/.gitattributes export-ignore
+/README.md export-ignore
+/license.txt export-ignore
+/style_tester/tests export-ignore

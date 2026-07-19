@@ -19,7 +19,8 @@ class ForumBuilder extends BaseBuilder
 {
 	public function build(): array
 	{
-		$db = $this->db; $auth = $this->auth;
+		$db = $this->db;
+		$auth = $this->auth;
 
 		if (!class_exists('acp_forums'))
 		{
@@ -278,12 +279,13 @@ class ForumBuilder extends BaseBuilder
 		$role_id = $result ? (int) $db->sql_fetchfield('role_id') : 11;
 		$db->sql_freeresult($result);
 
-		// Assign Administrators (ID 5) and Global Moderators (ID 4) as moderators of default forum
+		// Assign Administrators (ID 5) and Global Moderators (ID 4) as moderators of default forum in batch
 		$groups_to_mod = [
 			'ADMINISTRATORS' => 5,
 			'GLOBAL_MODERATORS' => 4,
 		];
-		
+
+		$acl_group_rows = [];
 		foreach ($groups_to_mod as $g_name => $g_id)
 		{
 			// Check if already assigned to keep it idempotent
@@ -296,16 +298,19 @@ class ForumBuilder extends BaseBuilder
 			$db->sql_freeresult($result);
 			if (!$is_mod)
 			{
-				$acl_group_row = [
+				$acl_group_rows[] = [
 					'group_id' => (int) $g_id,
 					'forum_id' => (int) $def_forum_id,
 					'auth_option_id' => 0,
 					'auth_role_id' => (int) $role_id,
 					'auth_setting' => 0,
 				];
-				$sql = 'INSERT INTO ' . ACL_GROUPS_TABLE . ' ' . $db->sql_build_array('INSERT', $acl_group_row);
-				$this->execute_query($sql);
 			}
+		}
+
+		if (!empty($acl_group_rows))
+		{
+			$db->sql_multi_insert(ACL_GROUPS_TABLE, $acl_group_rows);
 		}
 
 		$auth->acl_clear_prefetch();
